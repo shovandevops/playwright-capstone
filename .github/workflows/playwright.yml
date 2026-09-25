@@ -33,7 +33,7 @@ jobs:
 
       - name: Run Pytest
         run: |
-          pytest --html=report.html --self-contained-html
+          pytest
 
       - name: Upload HTML Report
         id: upload-report
@@ -41,7 +41,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: pytest-html-report
-          path: report.html
+          path: reports/report.html
 
       - name: Upload Playwright Test Artifacts
         id: upload-playwright-artifacts
@@ -49,11 +49,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: playwright-artifacts
-          path: playwright-report/
+          path: test-results/
           if-no-files-found: ignore
         
       - name: Send Email Notification
-        if: always()
+        if: always() && env.SEND_EMAIL == 'true'
         run: |
           python scripts/send_email.py \
             "${{ job.status }}" \
@@ -61,6 +61,7 @@ jobs:
             "${{ github.workflow }}" \
             "${{ steps.upload-report.outputs.artifact-url }}"
         env:
+          SEND_EMAIL: ${{ secrets.SEND_EMAIL }}
           EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           EMAIL_SMTP_SERVER: ${{ secrets.EMAIL_SMTP_SERVER }}
