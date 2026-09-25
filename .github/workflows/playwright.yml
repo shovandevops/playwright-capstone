@@ -2,9 +2,11 @@ name: Playwright Tests
 
 on:
   push:
-    branches: [ main ]
+    branches: 
+      - '**'
   pull_request:
   workflow_dispatch:
+  create:
 
 jobs:
   test:
@@ -49,3 +51,18 @@ jobs:
           name: playwright-artifacts
           path: playwright-report/
           if-no-files-found: ignore
+        
+      - name: Send Email Notification
+        if: always()
+        run: |
+          python scripts/send_email.py \
+            "${{ job.status }}" \
+            "${{ github.repository }}" \
+            "${{ github.workflow }}" \
+            "${{ steps.upload-report.outputs.artifact-url }}"
+        env:
+          EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          EMAIL_SMTP_SERVER: ${{ secrets.EMAIL_SMTP_SERVER }}
+          EMAIL_SMTP_PORT: ${{ secrets.EMAIL_SMTP_PORT }}
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
