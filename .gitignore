@@ -1,0 +1,25 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+
+# Virtual Environments (Crucial to ignore!)
+.venv/
+
+# Testing and coverage
+.pytest_cache/
+
+# Logs
+logs/
+*.log
+
+
+# Screenshots
+screenshots/
+
+# Test results
+
+# Test results
+test-results/
+reports/
+
+# Allure results
+allure-results/
