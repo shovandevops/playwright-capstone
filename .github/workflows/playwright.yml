@@ -4,6 +4,7 @@ on:
   push:
     branches: [ main ]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   test:
@@ -33,12 +34,16 @@ jobs:
           pytest --html=report.html --self-contained-html
 
       - name: Upload HTML Report
+        id: upload-report
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pytest-html-report
           path: report.html
 
       - name: Upload Playwright Test Artifacts
+        id: upload-playwright-artifacts
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-artifacts
