@@ -24,6 +24,5 @@ reports/
 # Allure results
 allure-results/
 
-.env
 .env.local
 .env.qa
