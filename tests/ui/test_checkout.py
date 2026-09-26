@@ -7,10 +7,17 @@ from pages.checkout_page import CheckoutPage
 
 checkout_data = load_json_data("checkout_data.json")
 
+# Multi-line form for applying several marks to every test in this module:
+# pytestmark = [
+#     pytest.mark.ui,
+#     pytest.mark.auth,
+#     pytest.mark.regression,
+# ]
+pytestmark = [pytest.mark.ui]
+
 
 @pytest.mark.smoke
 @pytest.mark.regression
-@pytest.mark.ui
 @pytest.mark.parametrize("order", checkout_data)
 def test_complete_checkout_and_validate_order(logged_in_page, order):
     """End-to-end checkout succeeds for each JSON checkout dataset."""

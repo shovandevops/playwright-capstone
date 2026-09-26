@@ -5,9 +5,16 @@ from pages.cart_page import CartPage
 
 cart_data = load_json_data("cart_data.json")
 
+# Multi-line form for applying several marks to every test in this module:
+# pytestmark = [
+#     pytest.mark.ui,
+#     pytest.mark.auth,
+#     pytest.mark.regression,
+# ]
+pytestmark = [pytest.mark.ui]
+
 
 @pytest.mark.smoke
-@pytest.mark.ui
 def test_add_product_to_cart_and_validate_count(logged_in_page):
     """Adding a product increments the cart badge count."""
     product_name = cart_data["product_name"]
@@ -21,7 +28,6 @@ def test_add_product_to_cart_and_validate_count(logged_in_page):
 
 
 @pytest.mark.regression
-@pytest.mark.ui
 def test_remove_product_from_cart(logged_in_page):
     """Removing a product from inventory clears the cart badge."""
     product_name = cart_data["product_name"]
@@ -36,7 +42,6 @@ def test_remove_product_from_cart(logged_in_page):
 
 
 @pytest.mark.regression
-@pytest.mark.ui
 def test_remove_product_from_cart_page(logged_in_page):
     """Removing a line item from the cart page empties the cart."""
     product_name = cart_data["product_name"]

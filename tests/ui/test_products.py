@@ -7,10 +7,16 @@ from pages.product_details_page import ProductDetailsPage
 products_data = load_json_data("products_data.json")
 sort_data = load_json_data("sort_data.json")
 
+# Multi-line form for applying several marks to every test in this module:
+# pytestmark = [
+#     pytest.mark.ui,
+#     pytest.mark.auth,
+#     pytest.mark.regression,
+# ]
+pytestmark = [pytest.mark.ui, pytest.mark.readonly]
+
 
 @pytest.mark.smoke
-@pytest.mark.readonly
-@pytest.mark.ui
 def test_products_are_displayed(logged_in_page):
     """Inventory page shows the expected product catalog."""
     products_page = ProductsPage(logged_in_page)
@@ -24,8 +30,6 @@ def test_products_are_displayed(logged_in_page):
 
 
 @pytest.mark.regression
-@pytest.mark.readonly
-@pytest.mark.ui
 @pytest.mark.parametrize("product", products_data)
 def test_verify_product_details(logged_in_page, product):
     """Product details page shows name, price, and description for each dataset."""
@@ -42,8 +46,6 @@ def test_verify_product_details(logged_in_page, product):
 
 
 @pytest.mark.regression
-@pytest.mark.readonly
-@pytest.mark.ui
 @pytest.mark.parametrize("sort_case", sort_data)
 def test_sort_products(logged_in_page, sort_case):
     """Product sort dropdown reorders inventory by name or price."""

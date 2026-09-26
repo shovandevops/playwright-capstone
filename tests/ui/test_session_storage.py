@@ -5,9 +5,16 @@ from utils.json_utils import load_json_data
 
 cart_data = load_json_data("cart_data.json")
 
+# Multi-line form for applying several marks to every test in this module:
+# pytestmark = [
+#     pytest.mark.ui,
+#     pytest.mark.auth,
+#     pytest.mark.regression,
+# ]
+pytestmark = [pytest.mark.ui]
+
 
 @pytest.mark.regression
-@pytest.mark.ui
 def test_session_storage_cart_lifecycle(logged_in_page):
     """
     Demonstrates write/read/save/clear/restore/validate for sessionStorage.

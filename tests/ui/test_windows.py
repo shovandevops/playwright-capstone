@@ -2,10 +2,16 @@ import pytest
 from playwright.sync_api import expect
 from pages.windows_page import WindowsPage
 
+# Multi-line form for applying several marks to every test in this module:
+# pytestmark = [
+#     pytest.mark.ui,
+#     pytest.mark.auth,
+#     pytest.mark.regression,
+# ]
+pytestmark = [pytest.mark.ui, pytest.mark.readonly]
+
 
 @pytest.mark.regression
-@pytest.mark.readonly
-@pytest.mark.ui
 def test_open_new_window_and_validate_child_page(page, env):
     """Opens a child tab via expect_page() and validates parent and child pages."""
     windows_page = WindowsPage(page)

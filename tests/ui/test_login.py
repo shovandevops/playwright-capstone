@@ -9,10 +9,16 @@ valid_data = [d for d in login_data if d["username"] == "standard_user"]
 locked_out_data = [d for d in login_data if d["username"] == "locked_out_user"]
 invalid_data = [d for d in login_data if d["username"] == "invalid_user"]
 
+# Multi-line form for applying several marks to every test in this module:
+# pytestmark = [
+#     pytest.mark.ui,
+#     pytest.mark.auth,
+#     pytest.mark.regression,
+# ]
+pytestmark = [pytest.mark.ui, pytest.mark.auth]
+
 
 @pytest.mark.smoke
-@pytest.mark.ui
-@pytest.mark.auth
 @pytest.mark.parametrize("credentials", valid_data)
 def test_valid_login(page, env, credentials):
     """Valid login navigates successfully to the inventory page."""
@@ -28,8 +34,6 @@ def test_valid_login(page, env, credentials):
 
 
 @pytest.mark.regression
-@pytest.mark.ui
-@pytest.mark.auth
 @pytest.mark.parametrize("credentials", invalid_data)
 def test_invalid_login(page, env, credentials):
     """Invalid credentials show the expected error message."""
@@ -45,8 +49,6 @@ def test_invalid_login(page, env, credentials):
 
 
 @pytest.mark.regression
-@pytest.mark.ui
-@pytest.mark.auth
 @pytest.mark.parametrize("credentials", locked_out_data)
 def test_locked_out_user_login(page, env, credentials):
     """Locked-out user sees the locked-out error message."""
