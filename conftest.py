@@ -4,6 +4,7 @@ from playwright.sync_api import sync_playwright, Playwright, APIRequestContext
 from utils.logger import get_logger, log_step, log_data
 from config.env import EnvConfig
 from api_clients.posts_client import PostsClient
+from api_clients.users_client import UsersClient
 
 # @pytest.fixture()
 # def page():
@@ -50,3 +51,7 @@ def api_context(playwright: Playwright, api_base_url: str) -> APIRequestContext:
 @pytest.fixture()
 def posts_client(api_context: APIRequestContext) -> PostsClient:
     return PostsClient(api_context)
+
+@pytest.fixture()
+def users_client(api_context: APIRequestContext) -> UsersClient:
+    return UsersClient(api_context)

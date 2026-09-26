@@ -5,7 +5,7 @@ from utils.logger import get_logger, log_step, log_data
 class PostsClient:
     def __init__(self, request_context: APIRequestContext):
         self.request = request_context
-        self.endpoint = "/posts"
+        self.endpoint = "posts"
         self.logger = get_logger("PostsClient")
         log_step(self.logger, "PostsClient initialized")
 
