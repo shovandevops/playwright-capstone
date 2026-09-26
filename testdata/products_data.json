@@ -1,0 +1,17 @@
+[
+  {
+    "product_name": "Sauce Labs Backpack",
+    "expected_price": "$29.99",
+    "description_contains": "carry.allTheThings"
+  },
+  {
+    "product_name": "Sauce Labs Bike Light",
+    "expected_price": "$9.99",
+    "description_contains": "lighting"
+  },
+  {
+    "product_name": "Sauce Labs Fleece Jacket",
+    "expected_price": "$49.99",
+    "description_contains": "jacket"
+  }
+]

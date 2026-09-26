@@ -1,0 +1,18 @@
+[
+  {
+    "sort_option": "Name (A to Z)",
+    "sort_type": "name_asc"
+  },
+  {
+    "sort_option": "Name (Z to A)",
+    "sort_type": "name_desc"
+  },
+  {
+    "sort_option": "Price (low to high)",
+    "sort_type": "price_asc"
+  },
+  {
+    "sort_option": "Price (high to low)",
+    "sort_type": "price_desc"
+  }
+]
