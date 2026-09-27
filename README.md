@@ -293,7 +293,7 @@ Workflow file: `.github/workflows/playwright.yml`
 1. Check out the repository
 2. Set up Python
 3. Install dependencies from `requirements.txt`
-4. Install Playwright browsers and OS dependencies
+4. Install Playwright Chromium and Firefox with OS dependencies
 5. Run `pytest` (generates the HTML report)
 6. Upload the HTML report artifact (`pytest-html-report`), always
 7. Upload Playwright failure artifacts (`playwright-artifacts` from `test-results/`)
@@ -303,8 +303,8 @@ Workflow file: `.github/workflows/playwright.yml`
 
 | Trigger | When it runs |
 |---|---|
-| `push` | Every time commits are pushed to a branch |
-| `pull_request` | When a pull request is opened, updated or reopened, so changes are validated before merging |
+| `push` | When commits land on `main` (direct push or a merged pull request) |
+| `pull_request` | When a pull request targeting `main` is opened, updated or reopened, so changes are validated before merging |
 | `workflow_dispatch` | Manually, from the **Actions** tab ("Run workflow") |
 
 **Email notification secrets**
