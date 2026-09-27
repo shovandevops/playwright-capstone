@@ -3,6 +3,7 @@ __pycache__/
 
 # Virtual Environments (Crucial to ignore!)
 .venv/
+venv/
 
 # Testing and coverage
 .pytest_cache/
