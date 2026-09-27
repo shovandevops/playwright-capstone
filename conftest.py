@@ -1,57 +1,112 @@
+import logging
+
 import pytest
+from playwright.sync_api import Playwright, APIRequestContext, Page
 from config.env import load_env
-from playwright.sync_api import sync_playwright, Playwright, APIRequestContext
-from utils.logger import get_logger, log_step, log_data
-from config.env import EnvConfig
+from config.settings import EnvConfig
 from api_clients.posts_client import PostsClient
 from api_clients.users_client import UsersClient
+from pages.login_page import LoginPage
+from pages.products_page import ProductsPage
+from utils.logger import get_logger, log_debug, log_error, log_step, log_warning
+from utils import session_storage
+from utils.json_utils import load_json_data
 
-# @pytest.fixture()
-# def page():
-#     with sync_playwright() as p:
-#         browser = p.chromium.launch(headless=False)
-#         context = browser.new_context()
-#         page = context.new_page()
-#         yield page
-#         context.close()
-#         browser.close()
+MAX_FAILURE_MESSAGE_CHARS = 300
+
+# The log file runs at DEBUG; keep third-party library chatter out of it.
+logging.getLogger("asyncio").setLevel(logging.WARNING)
+
 
 @pytest.fixture(scope="session")
 def env():
     return load_env()
 
+
 @pytest.fixture(autouse=True)
 def test_logger(request):
     logger = get_logger(request.node.name)
     log_step(logger, f"Starting test: {request.node.name}")
-
     yield
-
     log_step(logger, f"Completed test: {request.node.name}")
+
 
 def pytest_html_report_title(report):
     report.title = "Playwright E2E Automation Report"
 
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    """
+    Logs each test phase outcome: failures at ERROR, skips at WARNING and
+    passes at DEBUG. Only the exception summary line is logged (not the full
+    traceback) so parametrized values such as passwords never reach the log.
+    """
+    outcome = yield
+    report = outcome.get_result()
+    logger = get_logger(item.name)
+
+    if report.failed:
+        reason = "unknown error"
+        if call.excinfo is not None:
+            reason = call.excinfo.exconly().splitlines()[0][:MAX_FAILURE_MESSAGE_CHARS]
+        log_error(
+            logger,
+            f"{report.when.upper()} FAILED: {item.nodeid} ({report.duration:.2f}s) - {reason}",
+        )
+    elif report.skipped:
+        reason = report.longrepr[2] if isinstance(report.longrepr, tuple) else "skipped"
+        log_warning(logger, f"SKIPPED: {item.nodeid} - {reason}")
+    elif report.when == "call":
+        log_debug(logger, f"PASSED: {item.nodeid} ({report.duration:.2f}s)")
+
+
 @pytest.fixture(scope="session")
 def api_base_url(env: EnvConfig) -> str:
     return env.jsonplaceholder_url
+
 
 @pytest.fixture()
 def api_context(playwright: Playwright, api_base_url: str) -> APIRequestContext:
     logger = get_logger("api_context")
     log_step(logger, f"Creating API context for {api_base_url}")
     request_context = playwright.request.new_context(
-            base_url=api_base_url,
-            extra_http_headers={"Content-Type": "application/json"}
-        )
+        base_url=api_base_url,
+        extra_http_headers={"Content-Type": "application/json"},
+    )
     yield request_context
     request_context.dispose()
     log_step(logger, "API context disposed")
+
 
 @pytest.fixture()
 def posts_client(api_context: APIRequestContext) -> PostsClient:
     return PostsClient(api_context)
 
+
 @pytest.fixture()
 def users_client(api_context: APIRequestContext) -> UsersClient:
     return UsersClient(api_context)
+
+
+@pytest.fixture()
+def logged_in_page(page: Page, env: EnvConfig):
+    """
+    Logs in as standard_user, yields the authenticated page, then clears
+    sessionStorage on teardown so cart state does not leak between tests.
+    """
+    credentials = next(
+        item
+        for item in load_json_data("login_data.json")
+        if item["username"] == "standard_user"
+    )
+    login_page = LoginPage(page)
+    login_page.goto(env.saucedemo_url)
+    page.wait_for_load_state("domcontentloaded")
+    login_page.login(credentials["username"], credentials["password"])
+    products_page = ProductsPage(page)
+    products_page.wait_until_loaded()
+    yield page
+    # SauceDemo cart lives in localStorage; assignment helpers use sessionStorage
+    session_storage.clear_session_storage(page)
+    page.evaluate("() => localStorage.clear()")

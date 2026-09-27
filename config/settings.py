@@ -4,3 +4,6 @@ class EnvConfig:
         self.saucedemo_url =  os.getenv("SAUCE_DEMO_URL")
         self.demoqa_url = os.getenv("DEMO_QA_URL")
         self.jsonplaceholder_url = os.getenv("JSON_PLACEHOLDER_URL")
+        self.the_internet_url = os.getenv(
+            "THE_INTERNET_URL", "https://the-internet.herokuapp.com/"
+        )

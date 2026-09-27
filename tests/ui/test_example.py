@@ -5,6 +5,13 @@ from config.settings import EnvConfig
 from pages.base_page import BasePage
 from utils.logger import log_step, log_data
 
+# Multi-line form for applying several marks to every test in this module:
+# pytestmark = [
+#     pytest.mark.ui,
+#     pytest.mark.auth,
+#     pytest.mark.regression,
+# ]
+pytestmark = [pytest.mark.ui]
 
 def test_has_title(page, env: EnvConfig):
     base_page = BasePage(page)

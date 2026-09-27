@@ -1,6 +1,7 @@
 # tests/test_users_api.py
 import pytest
 from api_clients.users_client import UsersClient
+from models.user_model import User
 from utils.json_comparator import deep_compare
 
 
@@ -133,10 +134,25 @@ class TestUsersAPI:
         response = users_client.update_user(user_id, payload)
         assert response.ok
         assert response.status == 200
-    
+
+        body = response.json()
+        assert body == {**payload, "id": user_id}
+
+        updated_user = User(body)
+        assert updated_user.id == user_id
+        assert updated_user.name == payload["name"]
+        assert updated_user.username == payload["username"]
+        assert updated_user.email == payload["email"]
+
     def test_delete_user(self, users_client: UsersClient):
-        """Req #16: Delete an existing user."""
+        """
+        Req #16: Delete an existing user.
+        The fake API does not persist deletes, so the user cannot be checked
+        as missing afterwards; the empty-object response is the contract.
+        """
         user_id = 1
         response = users_client.delete_user(user_id)
         assert response.ok
         assert response.status == 200
+        assert response.headers["content-type"].startswith("application/json")
+        assert response.json() == {}
