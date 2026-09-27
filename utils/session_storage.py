@@ -29,11 +29,12 @@ from typing import Any
 
 from playwright.sync_api import Page
 
+from utils.json_utils import TESTDATA_DIR
 from utils.logger import get_logger, log_data, log_step
 
 logger = get_logger("session_storage")
 
-DEFAULT_SESSION_FILE = Path("testdata") / "session_data.json"
+DEFAULT_SESSION_FILE = TESTDATA_DIR / "session_data.json"
 
 
 def write_session_item(page: Page, key: str, value: str) -> None:
