@@ -1,3 +1,5 @@
+import logging
+
 import pytest
 from playwright.sync_api import Playwright, APIRequestContext, Page
 from config.env import load_env
@@ -6,9 +8,14 @@ from api_clients.posts_client import PostsClient
 from api_clients.users_client import UsersClient
 from pages.login_page import LoginPage
 from pages.products_page import ProductsPage
-from utils.logger import get_logger, log_step
+from utils.logger import get_logger, log_debug, log_error, log_step, log_warning
 from utils import session_storage
 from utils.json_utils import load_json_data
+
+MAX_FAILURE_MESSAGE_CHARS = 300
+
+# The log file runs at DEBUG; keep third-party library chatter out of it.
+logging.getLogger("asyncio").setLevel(logging.WARNING)
 
 
 @pytest.fixture(scope="session")
@@ -26,6 +33,32 @@ def test_logger(request):
 
 def pytest_html_report_title(report):
     report.title = "Playwright E2E Automation Report"
+
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    """
+    Logs each test phase outcome: failures at ERROR, skips at WARNING and
+    passes at DEBUG. Only the exception summary line is logged (not the full
+    traceback) so parametrized values such as passwords never reach the log.
+    """
+    outcome = yield
+    report = outcome.get_result()
+    logger = get_logger(item.name)
+
+    if report.failed:
+        reason = "unknown error"
+        if call.excinfo is not None:
+            reason = call.excinfo.exconly().splitlines()[0][:MAX_FAILURE_MESSAGE_CHARS]
+        log_error(
+            logger,
+            f"{report.when.upper()} FAILED: {item.nodeid} ({report.duration:.2f}s) - {reason}",
+        )
+    elif report.skipped:
+        reason = report.longrepr[2] if isinstance(report.longrepr, tuple) else "skipped"
+        log_warning(logger, f"SKIPPED: {item.nodeid} - {reason}")
+    elif report.when == "call":
+        log_debug(logger, f"PASSED: {item.nodeid} ({report.duration:.2f}s)")
 
 
 @pytest.fixture(scope="session")
