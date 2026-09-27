@@ -1,57 +1,45 @@
-# clients/users_client.py
-from typing import List
-from playwright.sync_api import APIRequestContext, APIResponse
+from typing import Any, Dict, List
+
+from playwright.sync_api import APIResponse
+
+from api_clients.base_client import ApiClientError, BaseApiClient
 from models.user_model import User
-from typing import Dict, Any
-from utils.logger import get_logger, log_step, log_data
+from utils.logger import log_data
 
 
-class UsersClient:
+class UsersClient(BaseApiClient):
     """Service object handling User endpoint requests."""
 
-    def __init__(self, request_context: APIRequestContext):
-        self.request = request_context
-        self.endpoint = "users"
-        self.logger = get_logger("UsersClient")
-        log_step(self.logger, "UsersClient initialized")
+    endpoint = "users"
 
     def get_users(self) -> List[User]:
-        log_step(self.logger, "Getting users")
-        response = self.request.get(self.endpoint)
-        log_step(self.logger, "Users retrieved")
-        log_data(self.logger, {"response": response.json()})
-        assert response.ok, f"Failed to fetch users: {response.status}"
-        return User.from_json_list(response.json())
+        """Returns all users as User models. Raises ApiClientError on failure."""
+        return User.from_json_list(self.get_users_raw())
 
-    def get_users_raw(self):
-        """Returns raw JSON response for deep comparison testing."""
-        log_step(self.logger, "Getting users raw")
-        response = self.request.get(self.endpoint)
-        return response.json()
-    
+    def get_users_raw(self) -> List[Dict[str, Any]]:
+        """Returns the raw users JSON list for deep comparison testing."""
+        response = self._send("get", self.endpoint)
+        self.ensure_ok(response, "fetch users")
+        data = self.parse_json(response)
+        if not isinstance(data, list):
+            raise ApiClientError(
+                f"Expected a JSON list from {response.url}, got {type(data).__name__}",
+                status=response.status,
+                url=response.url,
+            )
+        return data
+
     def create_user(self, payload: Dict[str, Any]) -> APIResponse:
         """Req #14: Create a new user."""
-        log_step(self.logger, "Creating user")
         log_data(self.logger, {"payload": payload})
-        response = self.request.post(self.endpoint, data=payload)
-        log_step(self.logger, "User created")
-        log_data(self.logger, {"response": response.json()})
-        return response
-    
+        return self._send("post", self.endpoint, data=payload)
+
     def update_user(self, user_id: int, payload: Dict[str, Any]) -> APIResponse:
         """Req #15: Update an existing user."""
-        log_step(self.logger, "Updating user")
-        log_data(self.logger, {"payload": payload})
-        response = self.request.put(f"{self.endpoint}/{user_id}", data=payload)
-        log_step(self.logger, "User updated")
-        log_data(self.logger, {"response": response.json()})
-        return response
-    
+        log_data(self.logger, {"user_id": user_id, "payload": payload})
+        return self._send("put", f"{self.endpoint}/{user_id}", data=payload)
+
     def delete_user(self, user_id: int) -> APIResponse:
         """Req #16: Delete an existing user."""
-        log_step(self.logger, "Deleting user")
         log_data(self.logger, {"user_id": user_id})
-        response = self.request.delete(f"{self.endpoint}/{user_id}")
-        log_step(self.logger, "User deleted")
-        log_data(self.logger, {"response": response.json()})
-        return response
+        return self._send("delete", f"{self.endpoint}/{user_id}")
